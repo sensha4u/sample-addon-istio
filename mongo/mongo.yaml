@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: database-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mongo
+  name: mongo
+  namespace: database-system
+spec:
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - env:
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: password
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: admin
+          image: mongo
+          name: mongo
+          resources:
+            requests:
+              cpu: 10m
+          volumeMounts:
+            - mountPath: /data/configdb
+              name: data01
+            - mountPath: /data/db
+              name: data02
+      hostname: mongo
+      volumes:
+        - name: data01
+          emptyDir: {}
+        - name: data02
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: mongo
+  name: mongo
+  namespace: database-system
+spec:
+  type: ClusterIP
+  ports:  
+    - name: "27017"
+      port: 27017
+      targetPort: 27017
+  selector:
+    app: mongo
+

@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jenkins-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+  namespace: jenkins-system
+  labels:
+    app: jenkins
+spec:
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - name: jenkins
+          image: jenkins/jenkins:lts-jdk11
+          volumeMounts:
+            - name: data
+              mountPath: /var/jenkins_home
+          resources:
+            requests:
+              cpu: 10m
+      hostname: jenkins
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins
+  namespace: jenkins-system
+  labels:
+    app: jenkins
+spec:
+  type: ClusterIP
+  ports:
+    - name: http-query
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    - name: http-metric
+      port: 50000
+      protocol: TCP
+      targetPort: 50000
+  selector:
+    app: jenkins
+---
+
+#      kubectl exec --stdin --tty -u root jenkins /bin/bash
+#      apt-get update
+#      apt-get install gnupg2 pass sudo
+#      apt-get upgrade

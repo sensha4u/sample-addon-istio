@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: database-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: postgres
+  name: postgres
+  namespace: database-system
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_DB
+                  name: database-env
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_PASSWORD
+                  name: database-env
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_USER
+                  name: database-env
+          image: postgres:latest
+          name: postgres
+          resources:
+            requests:
+              cpu: 10m
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data/
+              name: data
+      hostname: postgres
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: postgres-database-env
+  name: database-env
+  namespace: database-system
+data:
+  POSTGRES_DB: MyDB
+  POSTGRES_PASSWORD: MyPassword
+  POSTGRES_USER: user
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: postgres
+  name: postgres
+  namespace: database-system
+spec:
+  type: ClusterIP
+  ports:
+    - name: "5432"
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: postgres
+status:
+  loadBalancer: {}
+
