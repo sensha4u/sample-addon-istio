@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: database-system
+  name: adminer-system
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -9,7 +9,7 @@ metadata:
   labels:
     app: adminer
   name: adminer
-  namespace: database-system
+  namespace: adminer-system
 spec:
   replicas: 1
   selector:
@@ -43,7 +43,7 @@ metadata:
   labels:
     app: adminer
   name: adminer
-  namespace: database-system
+  namespace: adminer-system
 spec:
   type: ClusterIP
   ports:
@@ -63,7 +63,7 @@ status:
 #   annotations:
 #     kubernetes.io/ingress.class: istio
 #   name: adminer
-#   namespace: database-system
+#   namespace: adminer-system
 # spec:
 #   rules:
 #   - host: 
@@ -78,7 +78,7 @@ status:
 # kind: Gateway
 # metadata:
 #   name: adminer-gateway
-#   namespace: database-system
+#   namespace: adminer-system
 # spec:
 #   selector:
 #     istio: ingressgateway  
@@ -94,7 +94,7 @@ status:
 # kind: VirtualService
 # metadata:
 #   name: adminer
-#   namespace: database-system
+#   namespace: adminer-system
 # spec:
 #   hosts:
 #   - "*"
